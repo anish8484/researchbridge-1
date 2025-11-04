@@ -1,53 +1,64 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import '@/App.css';
+import Landing from './components/Landing';
+import Auth from './components/Auth';
+import PatientDashboard from './components/PatientDashboard';
+import ResearcherDashboard from './components/ResearcherDashboard';
+import ProfileSetup from './components/ProfileSetup';
+import ClinicalTrials from './components/ClinicalTrials';
+import Publications from './components/Publications';
+import HealthExperts from './components/HealthExperts';
+import Collaborators from './components/Collaborators';
+import Forums from './components/Forums';
+import Favorites from './components/Favorites';
+import Chat from './components/Chat';
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setUser(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          localStorage.removeItem('token');
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-purple-50"><div className="text-xl">Loading...</div></div>;
+  }
+
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={user ? <Navigate to={user.user_type === 'patient' ? '/patient/dashboard' : '/researcher/dashboard'} /> : <Landing />} />
+        <Route path="/auth" element={user ? <Navigate to="/" /> : <Auth setUser={setUser} />} />
+        <Route path="/profile-setup" element={user ? <ProfileSetup user={user} /> : <Navigate to="/auth" />} />
+        <Route path="/patient/dashboard" element={user && user.user_type === 'patient' ? <PatientDashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
+        <Route path="/researcher/dashboard" element={user && user.user_type === 'researcher' ? <ResearcherDashboard user={user} setUser={setUser} /> : <Navigate to="/" />} />
+        <Route path="/clinical-trials" element={user ? <ClinicalTrials user={user} /> : <Navigate to="/" />} />
+        <Route path="/publications" element={user ? <Publications user={user} /> : <Navigate to="/" />} />
+        <Route path="/health-experts" element={user && user.user_type === 'patient' ? <HealthExperts user={user} /> : <Navigate to="/" />} />
+        <Route path="/collaborators" element={user && user.user_type === 'researcher' ? <Collaborators user={user} /> : <Navigate to="/" />} />
+        <Route path="/forums" element={user ? <Forums user={user} /> : <Navigate to="/" />} />
+        <Route path="/favorites" element={user ? <Favorites user={user} /> : <Navigate to="/" />} />
+        <Route path="/chat/:userId" element={user ? <Chat user={user} /> : <Navigate to="/" />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
