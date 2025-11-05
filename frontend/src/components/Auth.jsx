@@ -55,6 +55,156 @@ const Auth = ({ setUser }) => {
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to send reset code');
+      }
+
+      toast.success('Reset code sent! (Check console for demo)');
+      console.log('Reset Code:', data.reset_code); // For demo purposes
+      setShowResetForm(true);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, reset_code: resetCode, new_password: newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || 'Failed to reset password');
+      }
+
+      toast.success('Password reset successfully!');
+      setShowForgotPassword(false);
+      setShowResetForm(false);
+      setResetCode('');
+      setNewPassword('');
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div data-testid="forgot-password-page" className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md glass shadow-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl gradient-text">Reset Password</CardTitle>
+            <CardDescription>Enter your email to receive a reset code</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!showResetForm ? (
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="forgot-email">Email</Label>
+                  <Input
+                    data-testid="forgot-email-input"
+                    id="forgot-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <Button
+                  data-testid="send-reset-code"
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600"
+                  disabled={loading}
+                >
+                  {loading ? 'Sending...' : 'Send Reset Code'}
+                </Button>
+                <Button
+                  data-testid="back-to-login"
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => setShowForgotPassword(false)}
+                >
+                  Back to Login
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-code">Reset Code</Label>
+                  <Input
+                    data-testid="reset-code-input"
+                    id="reset-code"
+                    type="text"
+                    value={resetCode}
+                    onChange={(e) => setResetCode(e.target.value)}
+                    required
+                    placeholder="Enter 6-digit code"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    data-testid="new-password-input"
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                  />
+                </div>
+                <Button
+                  data-testid="reset-password-submit"
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600"
+                  disabled={loading}
+                >
+                  {loading ? 'Resetting...' : 'Reset Password'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setShowResetForm(false);
+                  }}
+                >
+                  Back to Login
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div data-testid="auth-page" className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md glass shadow-2xl">
