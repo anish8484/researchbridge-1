@@ -294,6 +294,61 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
     token = create_access_token(user.id, user.user_type)
     return {"token": token, "user_id": user.id, "user_type": user.user_type}
 
+@api_router.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # Don't reveal if email exists for security
+        return {"message": "If the email exists, a reset code has been sent"}
+    
+    # Generate 6-digit reset code
+    reset_code = str(uuid.uuid4().int)[:6]
+    
+    # Delete any existing reset codes for this email
+    db.query(PasswordReset).filter(PasswordReset.email == request.email).delete()
+    
+    # Store reset code with 15-minute expiration
+    new_reset = PasswordReset(
+        id=str(uuid.uuid4()),
+        email=request.email,
+        reset_code=reset_code,
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=15)
+    )
+    db.add(new_reset)
+    db.commit()
+    
+    # In production, send email here. For demo, return code
+    return {"message": "Reset code sent to email", "reset_code": reset_code}
+
+@api_router.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    # Find valid reset code
+    reset_doc = db.query(PasswordReset).filter(
+        PasswordReset.email == request.email,
+        PasswordReset.reset_code == request.reset_code
+    ).first()
+    
+    if not reset_doc:
+        raise HTTPException(status_code=400, detail="Invalid reset code")
+    
+    # Check if expired
+    if reset_doc.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Reset code expired")
+    
+    # Update password
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.password_hash = pwd_context.hash(request.new_password)
+    db.commit()
+    
+    # Delete used reset code
+    db.query(PasswordReset).filter(PasswordReset.id == reset_doc.id).delete()
+    db.commit()
+    
+    return {"message": "Password reset successfully"}
+
 @api_router.get("/auth/me")
 async def get_me(payload: dict = Depends(verify_token), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == payload["sub"]).first()
