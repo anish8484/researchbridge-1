@@ -97,8 +97,7 @@ async def seed_database():
     ]
     
     for pub_data in publications:
-        pub = Publication(**pub_data)
-        db.add(pub)
+        await db.publications.insert_one(pub_data)
     
     # Seed Health Experts
     experts = [
