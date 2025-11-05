@@ -256,6 +256,14 @@ class MeetingRequestCreate(BaseModel):
     expert_id: str
     notes: Optional[str] = None
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    reset_code: str
+    new_password: str
+
 # API endpoints
 @api_router.post("/auth/register")
 async def register(user_data: UserRegister, db: Session = Depends(get_db)):
