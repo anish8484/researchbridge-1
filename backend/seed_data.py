@@ -128,8 +128,7 @@ async def seed_database():
     ]
     
     for expert_data in experts:
-        expert = HealthExpert(**expert_data)
-        db.add(expert)
+        await db.health_experts.insert_one(expert_data)
     
     # Seed Forums
     forums = [
