@@ -1,13 +1,20 @@
 import asyncio
-from sqlalchemy.orm import Session
-from server import SessionLocal, ClinicalTrial, Publication, HealthExpert, Forum
+from motor.motor_asyncio import AsyncIOMotorClient
 import uuid
+import os
+from dotenv import load_dotenv
+from pathlib import Path
 
-def seed_database():
-    db = SessionLocal()
+ROOT_DIR = Path(__file__).parent
+load_dotenv(ROOT_DIR / '.env')
+
+async def seed_database():
+    mongo_url = os.environ['MONGO_URL']
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[os.environ['DB_NAME']]
     
     # Check if data already exists
-    existing_trials = db.query(ClinicalTrial).count()
+    existing_trials = await db.clinical_trials.count_documents({})
     if existing_trials > 0:
         print("Database already seeded")
         return
