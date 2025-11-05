@@ -14,8 +14,12 @@ const Auth = ({ setUser }) => {
   const defaultType = searchParams.get('type') || 'patient';
   const [userType, setUserType] = useState(defaultType);
   const [isLogin, setIsLogin] = useState(true);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetForm, setShowResetForm] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleAuth = async (e) => {
