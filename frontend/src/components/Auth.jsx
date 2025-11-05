@@ -255,6 +255,16 @@ const Auth = ({ setUser }) => {
                 >
                   {loading ? 'Logging in...' : 'Login'}
                 </Button>
+                <div className="text-center">
+                  <button
+                    data-testid="forgot-password-link"
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-purple-600 hover:text-purple-700 underline"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
               </form>
             </TabsContent>
             <TabsContent value="register">
