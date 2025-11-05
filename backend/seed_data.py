@@ -153,12 +153,10 @@ async def seed_database():
     ]
     
     for forum_data in forums:
-        forum = Forum(**forum_data)
-        db.add(forum)
+        await db.forums.insert_one(forum_data)
     
-    db.commit()
     print("Database seeded successfully!")
-    db.close()
+    client.close()
 
 if __name__ == "__main__":
-    seed_database()
+    asyncio.run(seed_database())
