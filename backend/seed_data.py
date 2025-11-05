@@ -60,8 +60,7 @@ async def seed_database():
     ]
     
     for trial_data in trials:
-        trial = ClinicalTrial(**trial_data)
-        db.add(trial)
+        await db.clinical_trials.insert_one(trial_data)
     
     # Seed Publications
     publications = [
