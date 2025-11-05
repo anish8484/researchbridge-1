@@ -160,6 +160,14 @@ class MeetingRequest(Base):
     notes = Column(Text)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
+class PasswordReset(Base):
+    __tablename__ = "password_resets"
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = Column(String, nullable=False)
+    reset_code = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 
