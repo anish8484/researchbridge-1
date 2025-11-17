@@ -17,7 +17,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -45,7 +45,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-primary:hover {
   transform: scale(1.02);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3);
 }
 
 .animate-fade-in {
@@ -75,7 +75,7 @@ h1, h2, h3, h4, h5, h6 {
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, #4f46e5, #6366f1);
   transition: width 0.3s ease;
 }
 
@@ -86,7 +86,7 @@ h1, h2, h3, h4, h5, h6 {
 input:focus, textarea:focus, select:focus {
   outline: none;
   ring: 2px;
-  ring-color: #667eea;
+  ring-color: #4f46e5;
 }
 
 .scrollbar-hide::-webkit-scrollbar {
